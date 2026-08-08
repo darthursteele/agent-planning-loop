@@ -1,0 +1,50 @@
+# Agent Planning Loop configuration.
+#
+# Each agent invocation is built from a command template. `{system_prompt}`
+# and `{task_prompt}` are substituted with the *contents* of the corresponding
+# prompt files at call time (not file paths) so the template only needs to
+# know how its CLI accepts a system prompt vs. a task prompt.
+#
+# Verify these flags against your installed CLI versions before relying on
+# this for real runs — non-interactive tool-approval flags in particular
+# change between CLI releases.
+
+agents:
+  claude:
+    command: >
+      claude -p "{task_prompt}"
+      --append-system-prompt "{system_prompt}"
+      --output-format text
+      --permission-mode acceptEdits
+      --allowedTools "mcp__linear__*"
+    timeout_seconds: 1200
+
+  codex:
+    command: >
+      codex exec "{task_prompt}"
+      --system-prompt "{system_prompt}"
+      --sandbox workspace-write
+      --ask-for-approval never
+    timeout_seconds: 1200
+
+  mock:
+    # Used by tests/ dry-run mode — points at the stub agent instead of a
+    # real CLI. Receives system_prompt and task_prompt as argv[1]/argv[2].
+    command: 'python3 tests/mock_agent.py "{system_prompt}" "{task_prompt}"'
+    timeout_seconds: 30
+
+roles:
+  author:
+    agent: claude
+    system_prompt: prompts/author_system_prompt.md
+    task_prompt: prompts/author_task_prompt.md
+  reviewer:
+    agent: codex
+    system_prompt: prompts/reviewer_system_prompt.md
+    task_prompt: prompts/reviewer_task_prompt.md
+
+loop:
+  max_rounds: 5
+
+escalation:
+  task_prompt: prompts/escalation_task_prompt.md

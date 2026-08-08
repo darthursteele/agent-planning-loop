@@ -1,0 +1,23 @@
+# Dry-run config: both roles point at the mock stub agent instead of the
+# real claude/codex CLIs. Used by tests/test_orchestrator.py.
+
+agents:
+  mock:
+    command: 'python3 tests/mock_agent.py "{system_prompt}" "{task_prompt}"'
+    timeout_seconds: 30
+
+roles:
+  author:
+    agent: mock
+    system_prompt: prompts/author_system_prompt.md
+    task_prompt: prompts/author_task_prompt.md
+  reviewer:
+    agent: mock
+    system_prompt: prompts/reviewer_system_prompt.md
+    task_prompt: prompts/reviewer_task_prompt.md
+
+loop:
+  max_rounds: 5
+
+escalation:
+  task_prompt: prompts/escalation_task_prompt.md
